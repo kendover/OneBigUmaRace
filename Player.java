@@ -1,32 +1,35 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.net.*;
+import java.io.*;
 
 public class Player{
     
-    private JFrame f;
+    private GameFrame gf;
     private JPanel cp;
     private int keyChecker;
 
-    public void Timer(){
-
-    }
+    private ClientSideConnection csc;
 
     public Player(){
-        f = new JFrame();
-        cp = (JPanel) f.getContentPane();
+        gf = new GameFrame();
+        cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
-
     }
 
     public void setUpGUI(){
-        f.setSize(320, 240);
-        f.setTitle("Player");
-        f.setLayout(null);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setVisible(true);
+        Container cp = gf.getContentPane();
+
+        gf.setLayout(null);
+        gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        gf.setVisible(true);
+        gf.setTitle("Final Project - Fernandez - Periña");
     }
-    
+
+    public void connectToServer(){
+        csc = new ClientSideConnection();
+    }
 
     public void addKeyBindings(){
 
@@ -54,5 +57,21 @@ public class Player{
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, false), "ml");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, false), "mr");
 
+    }
+
+    private class ClientSideConnection{
+        private Socket socket;
+        private DataInputStream dataIn;
+        private DataOutputStream dataOut;
+        public ClientSideConnection(){
+            System.out.println("client");
+            try{
+                socket = new Socket("localhost", 8888);
+                dataIn = new DataInputStream(socket.getInputStream());
+                dataOut = new DataOutputStream(socket.getOutputStream());
+            }   catch(IOException ex){
+                System.out.println("IO Exception from CSC constructor");
+            }
+        }
     }
 }

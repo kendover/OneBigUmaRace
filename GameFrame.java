@@ -2,27 +2,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class GameFrame {
-    private JFrame frame;
+public class GameFrame extends JFrame{
     private GameCanvas gc;
+    private int width = 1024;
+    private int height = 768;
     
     public GameFrame(){
-        frame = new JFrame();
-        gc = new GameCanvas(1024, 768);
-        
-        frame.add(gc);
-        frame.setVisible(true);
+        gc = new GameCanvas(width, height);
+        this.setResizable(false);        
+        this.add(gc);
+        this.pack();
+        this.setVisible(true);
     }
-
-    public void setUpGUI(){
-        Container cp = frame.getContentPane();
-        frame.setTitle("Final Project - Fernandez - Periña");
-        frame.pack();        
-    }
-
-    public void setUpButtonListener() {
-
-    }
-
-
 }
