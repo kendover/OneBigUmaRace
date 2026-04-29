@@ -1,10 +1,11 @@
-
+import java.net.*;
+import java.io.*;
 
 public class GameServer {
+
+
     public static void main(String[] args) {
-        Player player = new Player();
-        player.setUpGUI();
-        player.addKeyBindings();
-        
+        ServerProgram sp = new ServerProgram();   
+        sp.acceptConnections();
     }
 }
