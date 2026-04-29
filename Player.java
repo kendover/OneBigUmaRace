@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
@@ -9,7 +8,7 @@ public class Player{
     private int keyChecker;
 
     public void Timer(){
-
+        
     }
 
     public Player(){
