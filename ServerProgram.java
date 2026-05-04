@@ -1,14 +1,16 @@
-import java.net.*;
 import java.io.*;
+import java.net.*;
 
 public class ServerProgram {
     private ServerSocket ss;
     private int numPlayers;
+    private int maxPlayers;
     private double playerOneScore, playerTwoScore;
 
     public ServerProgram(){
         System.out.println("game server");
         numPlayers = 0;
+        maxPlayers = 2;
         try{
             ss = new ServerSocket(8888);
         }   catch(IOException ex) {
@@ -19,7 +21,7 @@ public class ServerProgram {
     public void acceptConnections(){
         try{
             System.out.println("Waiting for connections...");
-            while(numPlayers < 2){
+            while(numPlayers < maxPlayers){
                 Socket s = ss.accept();
                 numPlayers++;
                 System.out.println("Players #" + numPlayers + " has connected.");
@@ -29,5 +31,9 @@ public class ServerProgram {
             System.out.println("IOException from acceptionConnections()");
         }
     }
+
+    public int getNumPlayers(){
+        return numPlayers;
+    }   
     
 }

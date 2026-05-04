@@ -1,31 +1,48 @@
+import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import java.net.*;
 import java.io.*;
+import java.net.*;
+import javax.swing.*;
 
 public class Player{
     
     private GameFrame gf;
     private JPanel cp;
     private int keyChecker;
-
-    public void Timer(){
-
-    }
+    private ClientSideConnection csc;
+    private PlayerSprite ps;
+    private boolean forward;
+    private int foot;
 
     public Player(){
         gf = new GameFrame();
         cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
+        ps = new PlayerSprite(100, 100, 50, Color.decode("#4372ff"));
+        gf.getGameCanvas().setPlayerSprite(ps);
+        foot = 1;
+    }
+
+    public void AnimationTimer(){
+        Timer t = new Timer(50, new ActionListener() {
+            public void actionPerformed(ActionEvent ae){
+                if(forward){
+                    ps.moveH(3);
+                    forward = false;
+                } else{ ps.moveH(-3); }
+                gf.getGameCanvas().repaint();
+            }
+        });
+        t.start();
     }
 
     public void setUpGUI(){
         Container cp = gf.getContentPane();
-
-        gf.setLayout(null);
         gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gf.setVisible(true);
         gf.setTitle("Final Project - Fernandez - Periña");
+
+        AnimationTimer();
     }
 
     public void connectToServer(){
@@ -41,7 +58,14 @@ public class Player{
         AbstractAction moveLeft = new AbstractAction() {
             public void actionPerformed(ActionEvent ae){
                 System.out.println("Haru Urara stepped forward with her left leg!");
-
+                forward = true;
+                if (foot == 1){
+                    forward = true;
+                    foot = 2;
+                }
+                else{
+                    System.out.println("Wrong leg bro");
+                }
             }
         };
 
@@ -49,6 +73,12 @@ public class Player{
         AbstractAction moveRight = new AbstractAction(){
             public void actionPerformed(ActionEvent ae){
                 System.out.println("Haru Urara stepped forward with her right leg!");
+                if (foot == 2) {
+                    forward = true;
+                    foot = 1;
+                } else {
+                    System.out.println("Wrong leg bro");
+                }
             }
         };
 

@@ -5,4 +5,5 @@ public class GameStarter {
         player.setUpGUI();
         player.addKeyBindings();
     }
+    
 }
