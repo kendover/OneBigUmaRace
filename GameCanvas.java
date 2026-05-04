@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class GameCanvas extends JComponent{
     private int width, height;
-    private PlayerSprite playerSprite;
+    private PlayerSprite playerSprite, playerSprite2;
 
     public GameCanvas(int w, int h){
         width = w;
@@ -12,8 +12,9 @@ public class GameCanvas extends JComponent{
         this.setPreferredSize(new Dimension(width, height));
     }
 
-    public void setPlayerSprite(PlayerSprite ps) {
-        playerSprite = ps;
+    public void setPlayerSprite() {
+        playerSprite = new PlayerSprite(100, 100, 50, Color.decode("#98b2ff"));
+        playerSprite2 = new PlayerSprite(100, 200, 50, Color.decode("#ffb098"));
         repaint();
     }
 
@@ -22,10 +23,9 @@ public class GameCanvas extends JComponent{
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         Rectangle2D.Double r = new Rectangle2D.Double(0, 0, width, height);
-        g2d.setColor(Color.decode("#009A17"));
+        g2d.setColor(Color.decode("#4b9456"));
         g2d.fill(r);
-
         playerSprite.drawSprite(g2d);
-        
+        playerSprite2.drawSprite(g2d);
     }
 }

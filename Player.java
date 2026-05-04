@@ -8,28 +8,32 @@ public class Player{
     
     private GameFrame gf;
     private JPanel cp;
-    private int keyChecker;
-    private ClientSideConnection csc;
-    private PlayerSprite ps;
-    private boolean forward;
     private int foot;
+    private int playerID;
+    private ClientSideConnection csc;
+    private PlayerSprite ps, ps2; 
+    private double x, y;
+    private boolean forward, ready;
+    
+    
 
     public Player(){
+        foot = 1;
         gf = new GameFrame();
         cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
-        ps = new PlayerSprite(100, 100, 50, Color.decode("#4372ff"));
-        gf.getGameCanvas().setPlayerSprite(ps);
-        foot = 1;
+        gf.getGameCanvas().setPlayerSprite();
     }
 
     public void AnimationTimer(){
         Timer t = new Timer(50, new ActionListener() {
             public void actionPerformed(ActionEvent ae){
-                if(forward){
+                if(forward && ready){
                     ps.moveH(3);
                     forward = false;
-                } else{ ps.moveH(-3); }
+                } else if (!forward && ready) {
+                    ps.moveH(-3);
+                }
                 gf.getGameCanvas().repaint();
             }
         });
@@ -100,8 +104,11 @@ public class Player{
                 socket = new Socket("localhost", 8888);
                 dataIn = new DataInputStream(socket.getInputStream());
                 dataOut = new DataOutputStream(socket.getOutputStream());
+                playerID = dataIn.readInt();
+                System.out.println("Player ID #" + playerID);
             }   catch(IOException ex){
                 System.out.println("IO Exception from CSC constructor");
+                ex.printStackTrace(System.out);
             }
         }
     }
