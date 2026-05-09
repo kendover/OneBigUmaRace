@@ -3,8 +3,8 @@ import java.net.*;
 
 public class ServerProgram {
     private ServerSocket ss;
-    private int numPlayers;
-    private int maxPlayers;
+    private int numPlayers, maxPlayers, playersID, otherPlayer;
+    private ServerSideConnection player1, player2;
     private double playerOneScore, playerTwoScore;
 
     public ServerProgram(){
@@ -33,7 +33,15 @@ public class ServerProgram {
                 Socket s = ss.accept();
                 numPlayers++;
                 System.out.println("Players #" + numPlayers + " has connected.");
-
+                ServerSideConnection ssc = new ServerSideConnection(s, numPlayers);
+                if(numPlayers == 1){
+                    player1 = ssc;
+                } else{
+                    player2 = ssc;
+                }
+                Thread t = new Thread(ssc);
+                t.start();
+                
                 DataOutputStream out = new DataOutputStream(s.getOutputStream());
                 out.writeInt(numPlayers);
                 out.flush();
@@ -49,6 +57,37 @@ public class ServerProgram {
 
     public int getNumPlayers(){
         return numPlayers;
+    }
+
+    private class ServerSideConnection implements Runnable{
+        
+        private Socket socket;
+        private DataInputStream dataIn;
+        private DataOutputStream dataOut;
+        private int playerID;
+
+        public ServerSideConnection(Socket s, int id) {
+            socket = s;
+            playerID = id;
+            try{
+                dataIn = new DataInputStream(socket.getInputStream());
+                dataOut = new DataOutputStream(socket.getOutputStream());
+            }catch (IOException ex) {
+                System.out.println("IOException from SSC Constructor");
+            }
+        }
+
+        public void run(){
+            try{
+                dataOut.writeInt(playerID);
+                dataOut.flush();
+                while(true){
+                    
+                }
+            }catch (IOException ex){
+                System.out.println("IOException from run() SSC");
+            }
+        }
     }
 
 }

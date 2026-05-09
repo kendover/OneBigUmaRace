@@ -11,7 +11,7 @@ public class Player{
     private int foot;
     private int playerID;
     private ClientSideConnection csc;
-    private PlayerSprite ps, ps2; 
+    private PlayerSprite mainChar, mainOpp; 
     private double x, y;
     private boolean forward;
     
@@ -23,18 +23,16 @@ public class Player{
         cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
         gf.getGameCanvas().setPlayerSprite();
-        ps = gf.getGameCanvas().getPlayerSprite();
-        ps2 = gf.getGameCanvas().getPlayerSprite2();
     }
 
     public void AnimationTimer(){
         Timer t = new Timer(50, new ActionListener() {
             public void actionPerformed(ActionEvent ae){
                 if(forward){
-                    ps.moveH(3);
+                    mainChar.moveH(3);
                     forward = false;
                 } else if (!forward) {
-                    ps.moveH(-3);
+                    mainChar.moveH(-1.5);
                 }
                 gf.getGameCanvas().repaint();
             }
@@ -47,8 +45,17 @@ public class Player{
         gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gf.setVisible(true);
         gf.setTitle("Final Project - Fernandez - Periña");
-
         this.AnimationTimer();
+    }
+
+    public void assignSprite(){
+        if(playerID == 1){
+            mainChar = gf.getGameCanvas().getPlayerSprite();
+            mainOpp = gf.getGameCanvas().getPlayerSprite2();
+        } else{
+            mainChar = gf.getGameCanvas().getPlayerSprite2();
+            mainOpp = gf.getGameCanvas().getPlayerSprite();
+        }
     }
 
     public void connectToServer(){
@@ -106,7 +113,7 @@ public class Player{
                 dataIn = new DataInputStream(socket.getInputStream());
                 dataOut = new DataOutputStream(socket.getOutputStream());
                 playerID = dataIn.readInt();
-                System.out.println("Player ID #" + playerID);
+                System.out.println("Connected to server as Player ID #" + playerID + ".");
             }   catch(IOException ex){
                 System.out.println("IO Exception from CSC constructor");
                 ex.printStackTrace(System.out);

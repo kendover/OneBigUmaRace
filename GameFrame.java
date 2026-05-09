@@ -10,8 +10,7 @@ public class GameFrame extends JFrame{
         this.setResizable(false);
         this.add(gc);
         this.pack();
-        this.setVisible(true);
-        
+        this.setVisible(true);        
     }
 
     public GameCanvas getGameCanvas() {
