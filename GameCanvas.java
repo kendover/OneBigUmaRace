@@ -28,4 +28,12 @@ public class GameCanvas extends JComponent{
         playerSprite.drawSprite(g2d);
         playerSprite2.drawSprite(g2d);
     }
+
+    public PlayerSprite getPlayerSprite(){
+        return playerSprite;
+    }
+
+    public PlayerSprite getPlayerSprite2(){
+        return playerSprite2;
+    }
 }

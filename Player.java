@@ -13,7 +13,7 @@ public class Player{
     private ClientSideConnection csc;
     private PlayerSprite ps, ps2; 
     private double x, y;
-    private boolean forward, ready;
+    private boolean forward;
     
     
 
@@ -23,15 +23,17 @@ public class Player{
         cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
         gf.getGameCanvas().setPlayerSprite();
+        ps = gf.getGameCanvas().getPlayerSprite();
+        ps2 = gf.getGameCanvas().getPlayerSprite2();
     }
 
     public void AnimationTimer(){
         Timer t = new Timer(50, new ActionListener() {
             public void actionPerformed(ActionEvent ae){
-                if(forward && ready){
+                if(forward){
                     ps.moveH(3);
                     forward = false;
-                } else if (!forward && ready) {
+                } else if (!forward) {
                     ps.moveH(-3);
                 }
                 gf.getGameCanvas().repaint();
@@ -46,7 +48,7 @@ public class Player{
         gf.setVisible(true);
         gf.setTitle("Final Project - Fernandez - Periña");
 
-        AnimationTimer();
+        this.AnimationTimer();
     }
 
     public void connectToServer(){
@@ -62,7 +64,6 @@ public class Player{
         AbstractAction moveLeft = new AbstractAction() {
             public void actionPerformed(ActionEvent ae){
                 System.out.println("Haru Urara stepped forward with her left leg!");
-                forward = true;
                 if (foot == 1){
                     forward = true;
                     foot = 2;
