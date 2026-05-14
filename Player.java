@@ -5,24 +5,29 @@ import java.net.*;
 import javax.swing.*;
 
 public class Player{
-    
+
+    //meta fields
     private GameFrame gf;
     private JPanel cp;
-    private int foot;
     private int playerID;
     private ClientSideConnection csc;
+    private Socket socket;
+    private ReadFromServer rfsRunnable;
+    private WriteToServer wtsRunnable;
+    private Container contentPane;
+
+    //position/identifier fields
+    private int foot;
     private PlayerSprite mainChar, mainOpp; 
     private double x, y;
     private boolean forward;
+    private int width = 1024;
+    private int height = 768;
     
     
 
     public Player(){
         foot = 1;
-        gf = new GameFrame();
-        cp = (JPanel) gf.getContentPane();
-        cp.setFocusable(true);
-        gf.getGameCanvas().setPlayerSprite();
     }
 
     public void AnimationTimer(){
@@ -41,11 +46,22 @@ public class Player{
     }
 
     public void setUpGUI(){
-        Container cp = gf.getContentPane();
+        gf = new GameFrame();
+        contentPane = gf.getContentPane();
+        gf.setTitle("Final Project - Fernandez - Periña");
+        contentPane.setSize(new Dimension(width, height));
         gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gf.setVisible(true);
-        gf.setTitle("Final Project - Fernandez - Periña");
-        this.AnimationTimer();
+        gf.getGameCanvas().setPlayerSprite();
+
+        cp = (JPanel) gf.getContentPane();
+        cp.setFocusable(true);
+
+        assignSprite(); 
+        addKeyBindings();
+        AnimationTimer();
+
+        cp.requestFocusInWindow();
     }
 
     public void assignSprite(){
@@ -59,7 +75,22 @@ public class Player{
     }
 
     public void connectToServer(){
-        csc = new ClientSideConnection();
+        try{
+            socket = new Socket("localhost", 6767);
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            playerID = in.readInt();
+            System.out.println("Connected to server as Player ID #" + playerID + ".");
+            if(playerID == 1) {
+                System.out.println("Waiting for Player #2 to connect...");
+            }
+            rfsRunnable = new ReadFromServer(in); 
+            wtsRunnable = new WriteToServer(out);
+            rfsRunnable.waitForStartMsg();  
+        }   catch(IOException ex){
+            System.out.println("IO Exception from CSC constructor");
+            ex.printStackTrace(System.out);
+        }
     }
 
     public void addKeyBindings(){
@@ -93,7 +124,7 @@ public class Player{
                 }
             }
         };
-
+ 
         am.put("ml", moveLeft);
         am.put("mr", moveRight);
 
@@ -103,20 +134,71 @@ public class Player{
     }
 
     private class ClientSideConnection{
-        private Socket socket;
+
+    }
+
+    private class ReadFromServer implements Runnable{
+        
         private DataInputStream dataIn;
-        private DataOutputStream dataOut;
-        public ClientSideConnection(){
-            System.out.println("client");
+
+        public ReadFromServer(DataInputStream in){
+            dataIn = in;
+            System.out.println("RFS Runnable created");
+        }
+        public void run(){
             try{
-                socket = new Socket("localhost", 8888);
-                dataIn = new DataInputStream(socket.getInputStream());
-                dataOut = new DataOutputStream(socket.getOutputStream());
-                playerID = dataIn.readInt();
-                System.out.println("Connected to server as Player ID #" + playerID + ".");
-            }   catch(IOException ex){
-                System.out.println("IO Exception from CSC constructor");
-                ex.printStackTrace(System.out);
+                while(true){
+                    double enemyX = dataIn.readDouble();
+                    double enemyY = dataIn.readDouble();
+                    if(mainOpp != null){
+                        mainOpp.setX(enemyX);
+                        mainOpp.setY(enemyY);
+                    }
+                }
+            } catch(IOException ex){
+                System.out.println("IOException from RFS run()");
+            }
+        }
+
+        public void waitForStartMsg() {
+            try {
+                String startMsg = dataIn.readUTF();
+                System.out.println("Message from server: " + startMsg);
+                Thread readThread = new Thread(rfsRunnable);
+                Thread writeThread = new Thread(wtsRunnable);
+                readThread.start();
+                writeThread.start();
+                setUpGUI();
+            } catch (IOException ex) {
+                System.out.println("IOException from waitForStartMsg()");
+            }
+        }
+    }
+
+    private class WriteToServer implements Runnable{
+
+        private DataOutputStream dataOut;
+
+        public WriteToServer(DataOutputStream out){
+            dataOut = out;
+            System.out.println("WFS Runnable created");
+        }
+        public void run(){ //sends the x and y of our player sprite
+            try{
+                while(true){
+                    if(mainChar != null){
+                        dataOut.writeDouble(mainChar.getX());
+                        dataOut.writeDouble(mainChar.getY());
+                        dataOut.flush();
+                    }
+                    try{
+                        Thread.sleep(25);
+                    } catch(InterruptedException ex){
+                        System.out.println("InterruptedException from WTS run()");
+                    }
+                }
+            } catch(IOException ex){
+                System.out.println("IOException from WTS run()");
             }
         }
     }

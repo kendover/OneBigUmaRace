@@ -4,19 +4,32 @@ import java.net.*;
 public class ServerProgram {
     private ServerSocket ss;
     private int numPlayers, maxPlayers, playersID, otherPlayer;
-    private ServerSideConnection player1, player2;
-    private double playerOneScore, playerTwoScore;
+    private double playerOneScore, playerTwoScore, p1x, p1y, p2x, p2y;
+
+    private Socket p1Socket, p2Socket;
+    private ReadFromClient p1ReadRunnable;
+    private ReadFromClient p2ReadRunnable;
+    private WriteToClient p1WriteRunnable;
+    private WriteToClient p2WriteRunnable;
+
+
 
     public ServerProgram(){
-        System.out.println("game server");
+        System.out.println("===== GAME SERVER =====");
         numPlayers = 0;
         maxPlayers = 2;
-    
+        
+        //update values if we decide to change starting location
+        p1x = 100;
+        p1y = 100;
+        p2x = 100;
+        p2y = 200;
+
         try{
-            ss = new ServerSocket(8888);
+            ss = new ServerSocket(6767);
         }   catch(IOException ex) {
             System.out.println("IOException from ServerProgram constructor: unable to open port 8888");
-            ex.printStackTrace(System.out);
+            //ex.printStackTrace(System.out);
             ss = null;
         }   
     }    
@@ -31,21 +44,36 @@ public class ServerProgram {
             System.out.println("Waiting for connections...");
             while(numPlayers < maxPlayers){
                 Socket s = ss.accept();
-                numPlayers++;
-                System.out.println("Players #" + numPlayers + " has connected.");
-                ServerSideConnection ssc = new ServerSideConnection(s, numPlayers);
-                if(numPlayers == 1){
-                    player1 = ssc;
-                } else{
-                    player2 = ssc;
-                }
-                Thread t = new Thread(ssc);
-                t.start();
-                
+                DataInputStream in = new DataInputStream(s.getInputStream());
                 DataOutputStream out = new DataOutputStream(s.getOutputStream());
+
+                numPlayers++;
                 out.writeInt(numPlayers);
-                out.flush();
-                System.out.println("Sent player ID " + numPlayers + " to client.");
+                System.out.println("Players #" + numPlayers + " has connected."); 
+
+                ReadFromClient rfc = new ReadFromClient(numPlayers, in);
+                WriteToClient wtc = new WriteToClient(numPlayers, out);
+
+                if(numPlayers == 1){
+                    p1Socket = s;
+                    p1ReadRunnable = rfc;
+                    p1WriteRunnable = wtc;
+                } else{
+                    p2Socket = s;
+                    p2ReadRunnable = rfc;
+                    p2WriteRunnable = wtc;
+                    p1WriteRunnable.sendStartMsg();
+                    p2WriteRunnable.sendStartMsg();
+                    Thread readThread1 = new Thread(p1ReadRunnable);
+                    Thread readThread2 = new Thread(p2ReadRunnable);
+                    readThread1.start();
+                    readThread2.start();
+                    Thread writeThread1 = new Thread(p1WriteRunnable);
+                    Thread writeThread2 = new Thread(p2WriteRunnable);
+                    writeThread1.start();
+                    writeThread2.start();
+
+                }
             }
             System.out.println("Party is now full. No longer accepting connections.");
         
@@ -59,33 +87,71 @@ public class ServerProgram {
         return numPlayers;
     }
 
-    private class ServerSideConnection implements Runnable{
-        
-        private Socket socket;
-        private DataInputStream dataIn;
-        private DataOutputStream dataOut;
+    private class ReadFromClient implements Runnable {
         private int playerID;
+        private DataInputStream dataIn;
 
-        public ServerSideConnection(Socket s, int id) {
-            socket = s;
-            playerID = id;
-            try{
-                dataIn = new DataInputStream(socket.getInputStream());
-                dataOut = new DataOutputStream(socket.getOutputStream());
-            }catch (IOException ex) {
-                System.out.println("IOException from SSC Constructor");
-            }
-        }
+        public ReadFromClient(int pid, DataInputStream in){
+            playerID = pid;
+            dataIn = in;
+            System.out.println("RFC " + pid + " Runnable created");
+        } 
 
         public void run(){
             try{
-                dataOut.writeInt(playerID);
-                dataOut.flush();
                 while(true){
-                    
+                    if(playerID == 1){
+                        p1x = dataIn.readDouble();
+                        p1y = dataIn.readDouble();
+                    } else{
+                        p2x = dataIn.readDouble();
+                        p2y = dataIn.readDouble();
+                    }
                 }
-            }catch (IOException ex){
-                System.out.println("IOException from run() SSC");
+            } catch(IOException ex){
+                System.out.println("IOException from RFC run");
+            }
+        }
+    }
+
+    private class WriteToClient implements Runnable {
+        private int playerID;
+        private DataOutputStream dataOut;
+
+        public WriteToClient(int pid, DataOutputStream out){
+            playerID = pid;
+            dataOut = out;
+            System.out.println("WTC " + pid + " Runnable created");
+        } 
+
+        public void run(){
+            try{
+                while(true){
+                    if(playerID == 1){
+                        dataOut.writeDouble(p2x);
+                        dataOut.writeDouble(p2y);
+                        dataOut.flush();
+                    } else{
+                        dataOut.writeDouble(p1x);
+                        dataOut.writeDouble(p1y);
+                        dataOut.flush();
+                    }
+                    try{
+                        Thread.sleep(25);
+                    } catch(InterruptedException ex){
+                        System.out.println("Interrupted from WTC run()");
+                    }
+                }
+            } catch(IOException ex){
+                System.out.println("IOException from WTC run()");
+            }
+        }
+
+        public void sendStartMsg(){
+            try {
+                dataOut.writeUTF("Both umas are now ready. Go!");
+            } catch (IOException ex) {
+                System.out.println("IOException from sendStartMsg()");
             }
         }
     }
