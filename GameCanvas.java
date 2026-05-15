@@ -6,6 +6,7 @@ public class GameCanvas extends JComponent{
     private int width, height;
     private PlayerSprite playerSprite, playerSprite2;
     private FinishLine finishLine;
+    private ReadyScreen readyScreen;
 
     public GameCanvas(int w, int h){
         width = w;
@@ -23,6 +24,10 @@ public class GameCanvas extends JComponent{
         finishLine = new FinishLine(985, 0);
     }
 
+    public void setReadyScreen(){
+        readyScreen = new ReadyScreen(width, height);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -33,6 +38,7 @@ public class GameCanvas extends JComponent{
         playerSprite.drawSprite(g2d);
         playerSprite2.drawSprite(g2d);
         finishLine.drawFinishLine(g2d);
+        
     }
 
     public PlayerSprite getPlayerSprite(){
