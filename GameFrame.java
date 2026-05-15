@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.Font;
-
 import javax.swing.*;
 
 public class GameFrame extends JFrame{
@@ -20,11 +19,13 @@ public class GameFrame extends JFrame{
         readyScreenLabel.setFont(new Font("Arial",Font.BOLD,50));
         readyScreenLabel.setOpaque(true);
         readyScreenLabel.setBackground(new Color(50, 50, 50, 180));
- 
+
         this.add(gc);
         this.pack();
         this.setVisible(true);        
     }
+
+    
 
     public GameCanvas getGameCanvas() {
         return gc;

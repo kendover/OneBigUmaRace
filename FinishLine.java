@@ -1,13 +1,11 @@
 import java.awt.*;
-import java.awt.geom.*;
 
-import javax.swing.JFrame;
 public class FinishLine {
     private int x, y, squareSize; //no need for w since it'll span the whole screen
     private int height = 768;
 
     public FinishLine(int x, int y){
-        squareSize = 20;//adjust according to desired finish line
+        squareSize = 20; //adjust according to desired finish line
         this.x = x;
         this.y = y;
     }

@@ -5,109 +5,56 @@ import java.net.*;
 import javax.swing.*;
 
 public class Player{
-
-    //meta fields
+    
     private GameFrame gf;
     private JPanel cp;
+    private int foot;
     private int playerID;
     private ClientSideConnection csc;
-    private Socket socket;
-    private ReadFromServer rfsRunnable;
-    private WriteToServer wtsRunnable;
-    private Container contentPane;
-
-    //position/identifier fields
-    private int foot;
-    private PlayerSprite mainChar, mainOpp;
-    private String winningUma;
-    private boolean forward;
-    private int width = 1024;
-    private int height = 768;
-    private boolean hasWinner = false;
+    private PlayerSprite ps, ps2; 
+    private double x, y;
+    private boolean forward, ready;
+    
     
 
     public Player(){
         foot = 1;
+        ready = true;
+        gf = new GameFrame();
+        cp = (JPanel) gf.getContentPane();
+        cp.setFocusable(true);
     }
 
     public void AnimationTimer(){
         Timer t = new Timer(50, new ActionListener() {
             public void actionPerformed(ActionEvent ae){
-                if(hasWinner){
-                    return;
-                }
-
-                if(forward){
-                    mainChar.moveH(3);
+                if(forward && ready){
+                    //ps.moveH(3);
                     forward = false;
-                } else if (!forward) {
-                    mainChar.moveH(-1.5);
+                } else if (!forward && ready) {
+                    //ps.moveH(-3);
                 }
-
-                if(mainChar.getX() + mainChar.getSize() >= gf.getGameCanvas().getFinishLine().getX()){
-                    hasWinner = true;
-                    if(playerID == 1){
-                        String winningMsg = "Uma #1 is our champion!";
-                        winningUma = "Uma #1";
-                    } else{
-                        String winningMsg = "Uma #2 is our champion!";
-                        winningUma = "Uma #2";
-                    }
-                    showWinnerMessageBox();
-                }
-                gf.getGameCanvas().repaint();
+               gf.getGameCanvas().repaint();
             }
         });
         t.start();
     }
 
+ 
+
     public void setUpGUI(){
-        gf = new GameFrame();
-        contentPane = gf.getContentPane();
-        gf.setTitle("Final Project - Fernandez - Periña");
-        contentPane.setSize(new Dimension(width, height));
+        Container cp = gf.getContentPane();
         gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        gf.setTitle("Final Project - Fernandez - Periña: Player #" + playerID);
+        gf.getGameCanvas().setPlayerSprite(playerID);
         gf.setVisible(true);
-        gf.getGameCanvas().setPlayerSprite();
-        gf.getGameCanvas().setFinishLine();
-
-        cp = (JPanel) gf.getContentPane();
-        cp.setFocusable(true);
-
-        assignSprite(); 
-        addKeyBindings();
         AnimationTimer();
-
-        cp.requestFocusInWindow();
     }
 
-    public void assignSprite(){
-        if(playerID == 1){
-            mainChar = gf.getGameCanvas().getPlayerSprite();
-            mainOpp = gf.getGameCanvas().getPlayerSprite2();
-        } else{
-            mainChar = gf.getGameCanvas().getPlayerSprite2();
-            mainOpp = gf.getGameCanvas().getPlayerSprite();
-        }
-    }
+  
 
     public void connectToServer(){
-        try{
-            socket = new Socket("localhost", 6767);
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            playerID = in.readInt();
-            System.out.println("Connected to server as Player ID #" + playerID + ".");
-            if(playerID == 1) {
-                System.out.println("Waiting for Player #2 to connect...");
-            }
-            rfsRunnable = new ReadFromServer(in); 
-            wtsRunnable = new WriteToServer(out);
-            rfsRunnable.waitForStartMsg();  
-        }   catch(IOException ex){
-            System.out.println("IO Exception from CSC constructor");
-            //ex.printStackTrace(System.out);
-        }
+        csc = new ClientSideConnection();
     }
 
     public void addKeyBindings(){
@@ -119,6 +66,7 @@ public class Player{
         AbstractAction moveLeft = new AbstractAction() {
             public void actionPerformed(ActionEvent ae){
                 System.out.println("Haru Urara stepped forward with her left leg!");
+                forward = true;
                 if (foot == 1){
                     forward = true;
                     foot = 2;
@@ -141,7 +89,7 @@ public class Player{
                 }
             }
         };
- 
+
         am.put("ml", moveLeft);
         am.put("mr", moveRight);
 
@@ -151,75 +99,24 @@ public class Player{
     }
 
     private class ClientSideConnection{
-
-    }
-
-    private class ReadFromServer implements Runnable{
-        
+        private Socket socket;
         private DataInputStream dataIn;
-
-        public ReadFromServer(DataInputStream in){
-            dataIn = in;
-            System.out.println("RFS Runnable created");
-        }
-        public void run(){
-            try{
-                while(true){
-                    double enemyX = dataIn.readDouble();
-                    double enemyY = dataIn.readDouble();
-                    if(mainOpp != null){
-                        mainOpp.setX(enemyX);
-                        mainOpp.setY(enemyY);
-                    }
-                }
-            } catch(IOException ex){
-                System.out.println("IOException from RFS run()");
-            }
-        }
-
-        public void waitForStartMsg() {
-            try {
-                String startMsg = dataIn.readUTF();
-                System.out.println("Message from server: " + startMsg);
-                Thread readThread = new Thread(rfsRunnable);
-                Thread writeThread = new Thread(wtsRunnable);
-                readThread.start();
-                writeThread.start();
-                setUpGUI();
-            } catch (IOException ex) {
-                System.out.println("IOException from waitForStartMsg()");
-            }
-        }
-    }
-
-    private class WriteToServer implements Runnable{
-
         private DataOutputStream dataOut;
-
-        public WriteToServer(DataOutputStream out){
-            dataOut = out;
-            System.out.println("WFS Runnable created");
-        }
-        public void run(){ //sends the x and y of our player sprite
+        public ClientSideConnection(){
+            System.out.println("client");
             try{
-                while(true){
-                    if(mainChar != null){
-                        dataOut.writeDouble(mainChar.getX());
-                        dataOut.writeDouble(mainChar.getY());
-                        dataOut.flush();
-                    }
-                    try{
-                        Thread.sleep(25);
-                    } catch(InterruptedException ex){
-                        System.out.println("InterruptedException from WTS run()");
-                    }
-                }
-            } catch(IOException ex){
-                System.out.println("IOException from WTS run()");
+                socket = new Socket("localhost", 8888);
+                dataIn = new DataInputStream(socket.getInputStream());
+                dataOut = new DataOutputStream(socket.getOutputStream());
+                playerID = dataIn.readInt();
+                System.out.println("Player ID #" + playerID);
+            }   catch(IOException ex){
+                System.out.println("IO Exception from CSC constructor");
+                ex.printStackTrace(System.out);
             }
         }
     }
-    private void showWinnerMessageBox(){
-        JOptionPane.showMessageDialog(null, "Congratulations to our Uma Champion, " + winningUma + "!", "CONGRATULATIONS", JOptionPane.INFORMATION_MESSAGE);
-    }
+    
+    
+    
 }

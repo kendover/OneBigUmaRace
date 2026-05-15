@@ -1,11 +1,12 @@
 import java.awt.*;
-import java.awt.geom.*;
 
 public class PlayerSprite {
+    private Image img;
     private double x, y, size; 
     private Color color;
 
-    public PlayerSprite(double a, double b, double s, Color c) {
+    public PlayerSprite(Image i, double a, double b, double s, Color c) {
+        img = i;
         x = a;
         y = b;
         size = s;
@@ -13,9 +14,12 @@ public class PlayerSprite {
     }
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.setColor(color);
-        Rectangle2D.Double body = new Rectangle2D.Double(x, y, size, size);
-        g2d.fill(body);
+        if (img != null) {
+            g2d.drawImage(img, (int) x, (int) y, (int) size, (int) size, null);
+        } else {
+            g2d.setColor(color);
+            g2d.fillRect((int) x, (int) y, (int) size, (int) size);
+        }
     }
 
     public void moveH(double n) {x += n;}
@@ -26,6 +30,4 @@ public class PlayerSprite {
 
     public double getX() { return x; }
     public double getY() { return y; }
-    public double getSize() {return size;}
-
 }
