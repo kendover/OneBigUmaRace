@@ -18,12 +18,12 @@ public class Player{
 
     //position/identifier fields
     private int foot;
-    private PlayerSprite mainChar, mainOpp; 
-    private double x, y;
+    private PlayerSprite mainChar, mainOpp;
+    private String winningUma;
     private boolean forward;
     private int width = 1024;
     private int height = 768;
-    
+    private boolean hasWinner = false;
     
 
     public Player(){
@@ -33,11 +33,27 @@ public class Player{
     public void AnimationTimer(){
         Timer t = new Timer(50, new ActionListener() {
             public void actionPerformed(ActionEvent ae){
+                if(hasWinner){
+                    return;
+                }
+
                 if(forward){
                     mainChar.moveH(3);
                     forward = false;
                 } else if (!forward) {
                     mainChar.moveH(-1.5);
+                }
+
+                if(mainChar.getX() + mainChar.getSize() >= gf.getGameCanvas().getFinishLine().getX()){
+                    hasWinner = true;
+                    if(playerID == 1){
+                        String winningMsg = "Uma #1 is our champion!";
+                        winningUma = "Uma #1";
+                    } else{
+                        String winningMsg = "Uma #2 is our champion!";
+                        winningUma = "Uma #2";
+                    }
+                    showWinnerMessageBox();
                 }
                 gf.getGameCanvas().repaint();
             }
@@ -53,6 +69,7 @@ public class Player{
         gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gf.setVisible(true);
         gf.getGameCanvas().setPlayerSprite();
+        gf.getGameCanvas().setFinishLine();
 
         cp = (JPanel) gf.getContentPane();
         cp.setFocusable(true);
@@ -89,7 +106,7 @@ public class Player{
             rfsRunnable.waitForStartMsg();  
         }   catch(IOException ex){
             System.out.println("IO Exception from CSC constructor");
-            ex.printStackTrace(System.out);
+            //ex.printStackTrace(System.out);
         }
     }
 
@@ -201,5 +218,8 @@ public class Player{
                 System.out.println("IOException from WTS run()");
             }
         }
+    }
+    private void showWinnerMessageBox(){
+        JOptionPane.showMessageDialog(null, "Congratulations to our Uma Champion, " + winningUma + "!", "CONGRATULATIONS", JOptionPane.INFORMATION_MESSAGE);
     }
 }

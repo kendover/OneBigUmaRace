@@ -5,6 +5,7 @@ import javax.swing.*;
 public class GameCanvas extends JComponent{
     private int width, height;
     private PlayerSprite playerSprite, playerSprite2;
+    private FinishLine finishLine;
 
     public GameCanvas(int w, int h){
         width = w;
@@ -13,9 +14,13 @@ public class GameCanvas extends JComponent{
     }
 
     public void setPlayerSprite() {
-        playerSprite = new PlayerSprite(100, 100, 50, Color.decode("#98b2ff"));
-        playerSprite2 = new PlayerSprite(100, 200, 50, Color.decode("#ffb098"));
+        playerSprite = new PlayerSprite(100, 256, 50, Color.decode("#98b2ff"));
+        playerSprite2 = new PlayerSprite(100, 512, 50, Color.decode("#ffb098"));
         repaint();
+    }
+
+    public void setFinishLine(){
+        finishLine = new FinishLine(985, 0);
     }
 
     @Override
@@ -27,6 +32,7 @@ public class GameCanvas extends JComponent{
         g2d.fill(r);
         playerSprite.drawSprite(g2d);
         playerSprite2.drawSprite(g2d);
+        finishLine.drawFinishLine(g2d);
     }
 
     public PlayerSprite getPlayerSprite(){
@@ -35,5 +41,9 @@ public class GameCanvas extends JComponent{
 
     public PlayerSprite getPlayerSprite2(){
         return playerSprite2;
+    }
+
+    public FinishLine getFinishLine(){
+        return finishLine;
     }
 }

@@ -26,5 +26,6 @@ public class PlayerSprite {
 
     public double getX() { return x; }
     public double getY() { return y; }
+    public double getSize() {return size;}
 
 }

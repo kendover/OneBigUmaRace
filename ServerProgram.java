@@ -3,8 +3,8 @@ import java.net.*;
 
 public class ServerProgram {
     private ServerSocket ss;
-    private int numPlayers, maxPlayers, playersID, otherPlayer;
-    private double playerOneScore, playerTwoScore, p1x, p1y, p2x, p2y;
+    private int numPlayers, maxPlayers, readyPlayers;
+    private double p1x, p1y, p2x, p2y;
 
     private Socket p1Socket, p2Socket;
     private ReadFromClient p1ReadRunnable;
@@ -18,12 +18,13 @@ public class ServerProgram {
         System.out.println("===== GAME SERVER =====");
         numPlayers = 0;
         maxPlayers = 2;
+        readyPlayers = 0;
         
         //update values if we decide to change starting location
         p1x = 100;
-        p1y = 100;
+        p1y = 256;
         p2x = 100;
-        p2y = 200;
+        p2y = 512;
 
         try{
             ss = new ServerSocket(6767);
